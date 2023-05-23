@@ -1,0 +1,88 @@
+esphome:
+  name: esp32c3
+  platformio_options:
+    board_build.flash_mode: dio
+  friendly_name: esp32c3
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "da7XVoYHT5S74HPpSRZnmFIlEjXHlbZ9jZ+WY3BCnk4="
+
+ota:
+  password: "1b0474e5ffbdc3158f416e2d5bc73a65"
+
+wifi:
+  ssid: '2.4g-wifi'
+  password: 'password'
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Esp32C3 Fallback Hotspot"
+    password: "12345678"
+
+i2c:
+  sda: 18
+  scl: 19
+  scan: true
+  id: bus_a
+
+sensor:
+  - platform: aht10
+    temperature:
+      id: "temperature"
+      name: "temperature"
+      filters:
+      - offset: -1.0
+    humidity:
+      name: "humidity"
+      filters:
+      - offset: 10.0
+    update_interval: 10s
+
+font:
+  - file: "gfonts://Roboto Mono"
+    id: roboto
+    size: 10
+
+spi:
+  clk_pin: 4
+  mosi_pin: 6
+
+# time:
+#   - platform: sntp
+#     id: sntp_time
+#     timezone: Asia/Shanghai
+
+graph:
+  # Show bare-minimum auto-ranged graph
+  - id: single_temperature_graph
+    sensor: temperature
+    duration: 12h
+    width: 276
+    height: 101
+    x_grid: 120min
+    y_grid: 2.5
+
+display:
+  - platform: waveshare_epaper
+    cs_pin: 7
+    dc_pin: 10
+    busy_pin: 2
+    reset_pin: 3
+    model: gdey029t94
+    update_interval: 1200s
+    rotation: 90
+
+    # it.strftime(0, 0, id(roboto), "%Y-%m-%d %H:%M", id(sntp_time).now());
+    lambda: |-
+      it.printf(10, 0, id(roboto), "temperature: %.1f", id(temperature).state);
+      it.graph(10, 20, id(single_temperature_graph));
